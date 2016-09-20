@@ -10,40 +10,58 @@ import {
     Animated
 } from 'react-native'
 
+import Orientation from 'react-native-orientation'
+
+var orientation = Orientation.getInitialOrientation()
+Orientation.addOrientationListener(o => orientation = o)
+
 var Line = require('./line');
 var Circle = require('./circle');
 
-var Width = Dimensions.get('window').width;
-var Height = Dimensions.get('window').height;
-var Top = (Height - Width)/2.0 * 1.5;
-var Radius = Width / 10;
 var NUM_CIRCLES = 9
-var DEFAULT_STYLES = {
-    frame: {
-        backgroundColor: '#292B38',
-        flex: 1,
-        alignSelf: 'stretch'
-    },
-    board: {
-        position: 'absolute',
-        left: 0,
-        top: Top,
-        width: Width,
-        height: Height
-    },
-    message: {
-        position: 'absolute',
-        left: 0,
-        top: Top / 2.2,
-        width: Width,
-        height: Top / 3,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    msgText: {
-        fontSize: 14
-    },
-    line: {
+
+function getDimensions () {
+    var { width, height } = Dimensions.get('window');
+    var height = Dimensions.get('window').height;
+    var top = Math.abs((height - width)/2.0 * 1.5);
+    var radius = width / 10;
+    return {
+        width,
+        height,
+        radius,
+        top
+    }
+}
+
+function getDefaultStyles () {
+    var { width, height, radius, top } = getDimensions()
+    return {
+        frame: {
+            backgroundColor: '#292B38',
+            flex: 1,
+            alignSelf: 'stretch'
+        },
+        board: {
+            position: 'absolute',
+            left: 0,
+            top: top,
+            width: width,
+            height: height
+        },
+        message: {
+            position: 'absolute',
+            left: 0,
+            top: top / 2.2,
+            width: width,
+            height: top / 3,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        msgText: {
+            fontSize: 14
+        },
+        line: {
+        }
     }
 }
 
@@ -79,6 +97,7 @@ var GesturePassword = React.createClass({
     },
 
     getDefaultProps: function() {
+        var { width, height, radius, top } = getDimensions()
         return {
             message: '',
             baseColor: '#5FA8FC',
@@ -89,34 +108,52 @@ var GesturePassword = React.createClass({
             allowCross: false,
             shell: true,
             radius: {
-                outer: 2 * Radius,
-                inner: 2 * Radius / 3
+                outer: 2 * radius,
+                inner: 2 * radius / 3
             },
-            styles: DEFAULT_STYLES
+            // styles: getDefaultStyles()
         }
     },
     getInitialState: function() {
+        var dimensions = getDimensions()
+        var { width, height, radius, top } = dimensions
         var circles = [];
-        var Margin = Radius;
+        var Margin = radius;
         for (let i=0; i < NUM_CIRCLES; i++) {
             let p = i % 3;
             let q = parseInt(i / 3);
             circles.push({
                 isActive: false,
                 scale: new Animated.Value(1),
-                x: p * (Radius * 2 + Margin) + Margin + Radius,
-                y: q * (Radius * 2 + Margin) + Margin + Radius
+                x: p * (radius * 2 + Margin) + Margin + radius,
+                y: q * (radius * 2 + Margin) + Margin + radius
             });
         }
 
         return {
             circles: circles,
-            lines: []
+            lines: [],
+            dimensions: { ...dimensions, Margin },
+            orientation
         }
     },
-    componentWillMount: function() {
-        this.styles = StyleSheet.create({...DEFAULT_STYLES, ...this.props.styles})
 
+    _updateOrientation: function (orientation) {
+        this._updateStyles()
+        this.setState({ orientation, dimensions: getDimensions() })
+    },
+
+    _updateStyles: function () {
+        this.styles = StyleSheet.create({...getDefaultStyles(), ...this.props.styles})
+    },
+
+    componentWillUnmount: function () {
+        Orientation.removeOrientationListener(this._updateOrientation)
+    },
+
+    componentWillMount: function() {
+        Orientation.addOrientationListener(this._updateOrientation)
+        this._updateStyles()
         this._panResponder = PanResponder.create({
             // 要求成为响应者：
             onStartShouldSetPanResponder: (event, gestureState) => true,
@@ -241,7 +278,7 @@ var GesturePassword = React.createClass({
         var y = touch.y;
 
         for (let i=0; i < NUM_CIRCLES; i++) {
-            if ( helper.isPointInCircle({x, y}, this.state.circles[i], Radius) ) {
+            if ( helper.isPointInCircle({x, y}, this.state.circles[i], this.state.dimensions.radius) ) {
                 return String(i);
             }
         }
@@ -266,7 +303,7 @@ var GesturePassword = React.createClass({
     },
     onStart: function(e, g) {
         var x = e.nativeEvent.pageX;
-        var y = e.nativeEvent.pageY - Top;
+        var y = e.nativeEvent.pageY - this.state.dimensions.top;
 
         var lastChar = this.getTouchChar({x, y});
         if ( lastChar ) {
@@ -292,14 +329,14 @@ var GesturePassword = React.createClass({
     },
     onMove: function(e, g) {
         var x = e.nativeEvent.pageX;
-        var y = e.nativeEvent.pageY - Top;
+        var y = e.nativeEvent.pageY - this.state.dimensions.top;
 
         if ( this.isMoving ) {
             this.setLineProps({end: {x, y}});
 
             var lastChar = null;
 
-            if ( !helper.isPointInCircle({x, y}, this.state.circles[this.lastIndex], Radius) ) {
+            if ( !helper.isPointInCircle({x, y}, this.state.circles[this.lastIndex], this.state.dimensions.radius) ) {
                 lastChar = this.getTouchChar({x, y});
             }
 

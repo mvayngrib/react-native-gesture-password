@@ -24,5 +24,8 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/spikef/react-native-gesture-password/issues"
+  },
+  "peerDependencies": {
+    "react-native-orientation": "^1.17.0"
   }
 }

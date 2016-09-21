@@ -22,7 +22,6 @@ var NUM_CIRCLES = 9
 
 function getDimensions () {
     var { width, height } = Dimensions.get('window');
-    var height = Dimensions.get('window').height;
     var top = Math.abs((height - width)/2.0 * 1.5);
     var radius = width / 10;
     return {

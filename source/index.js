@@ -20,8 +20,15 @@ var Circle = require('./circle');
 
 var NUM_CIRCLES = 9
 
-function getDimensions () {
+function getDimensions (opts = {}) {
     var { width, height } = Dimensions.get('window');
+    if (
+        (opts.lockToPortrait && width > height) ||
+        (opts.lockToLandscape && width < height)
+    ) {
+        [width, height] = [height, width]
+    }
+
     var top = Math.abs((height - width)/2.0 * 1.5);
     var radius = width / 10;
     return {
@@ -32,8 +39,8 @@ function getDimensions () {
     }
 }
 
-function getDefaultStyles () {
-    var { width, height, radius, top } = getDimensions()
+function calcStyles (opts = {}) {
+    var { width, height, radius, top } = getDimensions(opts)
     return {
         frame: {
             backgroundColor: '#292B38',
@@ -70,6 +77,8 @@ var GesturePassword = React.createClass({
     sequence: '',   // 手势结果
     isMoving: false,
     propTypes: {
+        lockToPortrait: PropTypes.bool,
+        lockToLandscape: PropTypes.bool,
         message: PropTypes.string,
         styles: PropTypes.object,
         baseColor: PropTypes.string,
@@ -96,8 +105,10 @@ var GesturePassword = React.createClass({
     },
 
     getDefaultProps: function() {
-        var { width, height, radius, top } = getDimensions()
+        var lockToPortrait = true
+        var { radius } = getDimensions({ lockToPortrait })
         return {
+            lockToPortrait,
             message: '',
             baseColor: '#5FA8FC',
             rightColor: '#5FA8FC',
@@ -109,12 +120,11 @@ var GesturePassword = React.createClass({
             radius: {
                 outer: 2 * radius,
                 inner: 2 * radius / 3
-            },
-            // styles: getDefaultStyles()
+            }
         }
     },
     getInitialState: function() {
-        var dimensions = getDimensions()
+        var dimensions = this._getDimensions()
         var { width, height, radius, top } = dimensions
         var circles = [];
         var Margin = radius;
@@ -137,13 +147,17 @@ var GesturePassword = React.createClass({
         }
     },
 
+    _getDimensions() {
+        return getDimensions(this.props)
+    },
+
     _updateOrientation: function (orientation) {
         this._updateStyles()
-        this.setState({ orientation, dimensions: getDimensions() })
+        this.setState({ orientation, dimensions: this._getDimensions() })
     },
 
     _updateStyles: function () {
-        this.styles = StyleSheet.create({...getDefaultStyles(), ...this.props.styles})
+        this.styles = StyleSheet.create({...calcStyles(this.props), ...this.props.styles})
     },
 
     componentWillUnmount: function () {

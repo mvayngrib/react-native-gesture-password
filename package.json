@@ -28,5 +28,8 @@
   "peerDependencies": {
     "react-native-orientation": "^3",
     "prop-types": "*"
+  },
+  "dependencies": {
+    "create-react-class": "^15.6.3"
   }
 }

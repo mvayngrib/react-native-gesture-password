@@ -1,6 +1,7 @@
 var helper = require('./helper');
 
 import React from 'react'
+import createReactClass from 'create-react-class'
 import PropTypes from 'prop-types'
 import {
     StyleSheet,
@@ -8,7 +9,7 @@ import {
     Animated
 } from 'react-native';
 
-var Circle = React.createClass({
+var Circle = createReactClass({
     propTypes: {
         color: PropTypes.string,
         fill: PropTypes.bool,

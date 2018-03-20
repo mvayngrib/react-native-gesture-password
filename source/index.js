@@ -1,6 +1,7 @@
 var helper = require('./helper');
 
 import React from 'react'
+import createReactClass from 'create-react-class'
 import PropTypes from 'prop-types'
 import {
     StyleSheet,
@@ -72,7 +73,7 @@ function calcStyles (opts = {}) {
     }
 }
 
-var GesturePassword = React.createClass({
+var GesturePassword = createReactClass({
     timer: null,
     lastIndex: -1,
     sequence: '',   // 手势结果

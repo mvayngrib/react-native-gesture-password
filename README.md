@@ -62,6 +62,7 @@ Other components that you want to display.
 ```javascript
 
 var React = require('react-native');
+var createReactClass = require('create-react-class')
 var {
     AppRegistry,
     } = React;
@@ -69,7 +70,7 @@ var {
 var PasswordGesture = require('react-native-gesture-password');
 
 var Password1 = '';
-var AppDemo = React.createClass({
+var AppDemo = createReactClass({
     // Example for check password
     onEnd: function(password) {
         if (password == '123') {

@@ -6,7 +6,7 @@ var {
 var PasswordGesture = require('react-native-gesture-password');
 
 var Password1 = '';
-var AppDemo = React.createClass({
+var AppDemo = createReactClass({
     // Example for check password
     onEnd: function(password) {
         if (password == '123') {

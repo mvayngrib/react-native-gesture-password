@@ -1,13 +1,14 @@
 var helper = require('./helper');
 
 import React from 'react'
+import createReactClass from 'create-react-class'
 import PropTypes from 'prop-types'
 import {
     StyleSheet,
     View,
 } from 'react-native';
 
-var Line = React.createClass({
+var Line = createReactClass({
     propTypes: {
         style: PropTypes.object,
         start: PropTypes.shape({
